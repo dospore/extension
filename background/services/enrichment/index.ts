@@ -6,6 +6,7 @@ import {
 import {
   AnyEVMTransaction,
   EIP1559TransactionRequest,
+  EVMNetwork,
   Network,
 } from "../../networks"
 import {
@@ -149,6 +150,7 @@ export default class EnrichmentService extends BaseService<Events> {
   }
 
   async resolveTransactionAnnotation(
+    network: EVMNetwork,
     transaction:
       | AnyEVMTransaction
       | (Partial<EIP1559TransactionRequest> & { from: string }),
@@ -196,7 +198,7 @@ export default class EnrichmentService extends BaseService<Events> {
         }
       }
     } else {
-      const assets = await this.indexingService.getCachedAssets()
+      const assets = await this.indexingService.getCachedAssets(network)
 
       // See if the address matches a fungible asset.
       const matchingFungibleAsset = assets.find(
@@ -265,12 +267,14 @@ export default class EnrichmentService extends BaseService<Events> {
   }
 
   async enrichTransactionSignature(
+    network: EVMNetwork,
     transaction: Partial<EIP1559TransactionRequest> & { from: string },
     desiredDecimals: number
   ): Promise<EnrichedEVMTransactionSignatureRequest> {
     const enrichedTxSignatureRequest = {
       ...transaction,
       annotation: await this.resolveTransactionAnnotation(
+        network,
         transaction,
         desiredDecimals
       ),
@@ -291,6 +295,7 @@ export default class EnrichmentService extends BaseService<Events> {
     const enrichedTx = {
       ...transaction,
       annotation: await this.resolveTransactionAnnotation(
+        transaction.network,
         transaction,
         desiredDecimals
       ),
