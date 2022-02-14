@@ -2,7 +2,7 @@ import logger from "../../lib/logger"
 
 import { HexString } from "../../types"
 import { AccountBalance, AddressNetwork } from "../../accounts"
-import { Network } from "../../networks"
+import { EVMNetwork } from "../../networks"
 import {
   AnyAsset,
   CoinGeckoAsset,
@@ -149,7 +149,7 @@ export default class IndexingService extends BaseService<Events> {
    */
   async getLatestAccountBalance(
     account: string,
-    network: Network,
+    network: EVMNetwork,
     asset: FungibleAsset
   ): Promise<AccountBalance | null> {
     return this.db.getLatestAccountBalance(account, network, asset)
@@ -186,7 +186,7 @@ export default class IndexingService extends BaseService<Events> {
    * @param contractAddress - the address of the asset on its home network
    */
   async getKnownSmartContractAsset(
-    network: Network,
+    network: EVMNetwork,
     contractAddress: HexString
   ): Promise<SmartContractFungibleAsset> {
     const knownAssets = await this.getCachedAssets()
