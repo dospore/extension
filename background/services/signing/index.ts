@@ -13,24 +13,29 @@ import ChainService from "../chain"
 import { SigningMethod } from "../../redux-slices/signing"
 
 type SigningErrorReason = "userRejected" | "genericError"
+type ErrorResponse = {
+    type: "error"
+    reason: SigningErrorReason 
+}
 
 export type SignatureResponse =
   | {
       type: "success-tx"
       signedTx: SignedEVMTransaction
     }
+  | ErrorResponse
+
+export type PersonalSignatureResponse =
   | {
       type: "success-data"
       signedData: string
     }
-  | {
-      type: "error"
-      reason: SigningErrorReason
-    }
+  | ErrorResponse
 
 type Events = ServiceLifecycleEvents & {
   signingTxResponse: SignatureResponse
   signingDataResponse: SignatureResponse
+  personalSigningResponse: PersonalSignatureResponse
 }
 
 type SignerType = "keyring" | HardwareSignerType
@@ -215,9 +220,46 @@ export default class SigningService extends BaseService<Events> {
     }
   }
 
-  async signMessage(address: string, message: string): Promise<string> {
-    this.signMessage = this.signMessage.bind(this)
+  async signMessage(address: string, message: string, signingMethod: SigningMethod): Promise<string> {
+    try {
+      let signedMsg;
+      switch (signingMethod.type) {
+        case "ledger":
+          signedMsg = await this.ledgerService.signMessage(address, message)
+          break;
+        case "keyring":
+          signedMsg = await this.keyringService.personalSign({ signingData: message, account: address })
+          break;
+        default:
+          throw new Error(`Unreachable!`)
+      }
 
-    throw new Error("Unimplemented")
+      this.emitter.emit("personalSigningResponse", {
+        type: "success",
+        signedMsg,
+      })
+      return signedMsg;
+    } catch (err) {
+      if (err instanceof TransportStatusError) {
+        const transportError = err as Error & { statusCode: number }
+        switch (transportError.statusCode) {
+          case StatusCodes.CONDITIONS_OF_USE_NOT_SATISFIED:
+            this.emitter.emit("personalSigningResponse", {
+              type: "error",
+              reason: "userRejected",
+            })
+            throw err
+          default:
+            break
+        }
+      }
+
+      this.emitter.emit("personalSigningResponse", {
+        type: "error",
+        reason: "genericError",
+      })
+
+      throw err
+    } 
   }
 }

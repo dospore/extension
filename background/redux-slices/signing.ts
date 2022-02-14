@@ -1,13 +1,18 @@
 import { createSelector, createSlice } from "@reduxjs/toolkit"
 import Emittery from "emittery"
-import { EIP712TypedData, HexString } from "../types"
+import { EIP191Data, EIP712TypedData, HexString } from "../types"
 import { createBackgroundAsyncThunk } from "./utils"
+import { RootState } from "."
 
 export type Events = {
   requestSignTypedData: {
     typedData: EIP712TypedData
     account: HexString
     signingMethod: SigningMethod
+  }
+  requestSignData: {
+    signingData: EIP191Data 
+    account: HexString
   }
   signatureRejected: never
 }
@@ -21,11 +26,17 @@ export const signingSliceEmitter = new Emittery<Events>()
 export type SigningState = {
   signedTypedData: string | undefined
   typedDataRequest: SignTypedDataRequest | undefined
+
+  signedData: string | undefined
+  signDataRequest: SignDataRequest | undefined
 }
 
 export const initialState: SigningState = {
   typedDataRequest: undefined,
   signedTypedData: undefined,
+
+  signedData: undefined,
+  signDataRequest: undefined
 }
 
 export type EIP712DomainType = {
@@ -41,6 +52,11 @@ export type SignTypedDataRequest = {
   signingMethod: SigningMethod
 }
 
+export type SignDataRequest = {
+  account: string
+  signingData: EIP191Data
+}
+
 export const signTypedData = createBackgroundAsyncThunk(
   "signing/signTypedData",
   async (data: SignTypedDataRequest) => {
@@ -50,6 +66,17 @@ export const signTypedData = createBackgroundAsyncThunk(
       typedData,
       account,
       signingMethod,
+    })
+  }
+)
+
+export const signData = createBackgroundAsyncThunk(
+  "signing/signData",
+  async (data: SignDataRequest) => {
+    const { account, signingData } = data
+    await signingSliceEmitter.emit("requestSignData", {
+      signingData,
+      account,
     })
   }
 )
@@ -70,20 +97,42 @@ const signingSlice = createSlice({
       ...state,
       typedDataRequest: payload,
     }),
+    signDataRequest: (
+      state,
+      { payload }: { payload: SignDataRequest }
+    ) => {
+      return ({
+      ...state,
+      signDataRequest: payload
+    })},
+    signedData: (
+      state,
+      { payload }: { payload: string }
+    ) => ({
+      ...state,
+      signedData: payload,
+      signDataRequest: undefined  
+    }),
     clearSigningState: (state) => ({
       ...state,
       typedDataRequest: undefined,
+      signDataRequest: undefined
     }),
   },
 })
 
-export const { signedTypedData, typedDataRequest, clearSigningState } =
+export const { signedTypedData, typedDataRequest, signedData, signDataRequest, clearSigningState } =
   signingSlice.actions
 
 export default signingSlice.reducer
 
 export const selectTypedData = createSelector(
-  (state: { signing: SigningState }) => state.signing.typedDataRequest,
+  (state: RootState) => state.signing.typedDataRequest,
+  (signTypes) => signTypes
+)
+
+export const selectSigningData = createSelector(
+  (state: RootState) => state.signing.signDataRequest,
   (signTypes) => signTypes
 )
 

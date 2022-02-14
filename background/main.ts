@@ -22,7 +22,7 @@ import {
   SigningService,
 } from "./services"
 
-import { EIP712TypedData, HexString, KeyringTypes } from "./types"
+import { EIP712TypedData, EIP191Data, HexString, KeyringTypes } from "./types"
 import { SignedEVMTransaction } from "./networks"
 import { AddressOnNetwork, NameOnNetwork } from "./accounts"
 
@@ -72,9 +72,12 @@ import {
   clearSigningState,
   signedTypedData,
   SigningMethod,
+  signedData as signedDataAction,
   signingSliceEmitter,
   SignTypedDataRequest,
+  SignDataRequest,
   typedDataRequest,
+  signDataRequest,
 } from "./redux-slices/signing"
 import {
   resetLedgerState,
@@ -319,9 +322,10 @@ export default class Main extends BaseService<never> {
       ? (Promise.resolve(null) as unknown as Promise<LedgerService>)
       : LedgerService.create()
 
-    const signingService = HIDE_IMPORT_LEDGER
-      ? (Promise.resolve(null) as unknown as Promise<SigningService>)
-      : SigningService.create(keyringService, ledgerService, chainService)
+    // const signingService = HIDE_IMPORT_LEDGER
+      // ? (Promise.resolve(null) as unknown as Promise<SigningService>)
+      // : SigningService.create(keyringService, ledgerService, chainService)
+    const signingService = SigningService.create(keyringService, ledgerService, chainService);
 
     let savedReduxState = {}
     // Setting READ_REDUX_CACHE to false will start the extension with an empty
@@ -433,9 +437,11 @@ export default class Main extends BaseService<never> {
         handler: () => this.store.dispatch(initializationLoadingTimeHitLimit()),
       },
     })
-
+  
     // Start up the redux store and set it up for proxying.
     this.store = initializeStore(savedReduxState, this)
+
+    console.log('store', this.store)
 
     wrapStore(this.store, {
       serializer: encodeJSON,
@@ -731,6 +737,22 @@ export default class Main extends BaseService<never> {
         }
       }
     )
+    signingSliceEmitter.on(
+      "requestSignData",
+      async ({
+        signingData,
+        account,
+      }: {
+        signingData: EIP191Data, 
+        account: HexString
+      }) => {
+        const signedData = await this.keyringService.personalSign({
+          signingData,
+          account,
+        })
+        this.store.dispatch(signedDataAction(signedData))
+      }
+    )
 
     // Set up initial state.
     const existingAccounts = await this.chainService.getAccountsToTrack()
@@ -1014,6 +1036,39 @@ export default class Main extends BaseService<never> {
         } else {
           this.signingService.emitter.on("signingDataResponse", handleAndClear)
         }
+        signingSliceEmitter.on("signatureRejected", rejectAndClear)
+      }
+    )
+    this.internalEthereumProviderService.emitter.on(
+      "signDataRequest",
+      async ({
+        payload,
+        resolver,
+        rejecter,
+      }: {
+        payload: SignDataRequest
+        resolver: (result: string | PromiseLike<string>) => void
+        rejecter: () => void
+      }) => {
+        this.store.dispatch(signDataRequest(payload))
+
+        const resolveAndClear = (signature: string) => {
+          this.keyringService.emitter.off("signedData", resolveAndClear)
+          signingSliceEmitter.off(
+            "signatureRejected",
+            // eslint-disable-next-line @typescript-eslint/no-use-before-define
+            rejectAndClear
+          )
+          resolver(signature)
+        }
+
+        const rejectAndClear = () => {
+          this.keyringService.emitter.off("signedData", resolveAndClear)
+          signingSliceEmitter.off("signatureRejected", rejectAndClear)
+          rejecter()
+        }
+
+        this.keyringService.emitter.on("signedData", resolveAndClear)
         signingSliceEmitter.on("signatureRejected", rejectAndClear)
       }
     )
