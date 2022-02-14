@@ -18,7 +18,7 @@ import {
 } from "../chain/utils"
 import PreferenceService from "../preferences"
 import { internalProviderPort } from "../../redux-slices/utils/contract-utils"
-import { SignTypedDataRequest } from "../../redux-slices/signing"
+import { SignTypedDataRequest, SignDataRequest } from "../../redux-slices/signing"
 import { getEthereumNetwork } from "../../lib/utils"
 
 // A type representing the transaction requests that come in over JSON-RPC
@@ -49,6 +49,7 @@ type Events = ServiceLifecycleEvents & {
     SignedEVMTransaction
   >
   signTypedDataRequest: DAppRequestEvent<SignTypedDataRequest, string>
+  signDataRequest: DAppRequestEvent<SignDataRequest, string>
   // connect
   // disconnet
   // account change
@@ -112,7 +113,6 @@ export default class InternalEthereumProviderService extends BaseService<Events>
         } as SignTypedDataRequest)
       case "eth_chainId":
         return getEthereumNetwork().chainID
-
       case "eth_blockNumber":
       case "eth_call":
       case "eth_estimateGas":
@@ -179,6 +179,11 @@ export default class InternalEthereumProviderService extends BaseService<Events>
           )
         )
       case "eth_sign": // --- important wallet methods ---
+      case "personal_sign":
+        return this.signData({
+          account: params[1],
+          signingData: params[0],
+      } as SignDataRequest)
       case "metamask_getProviderState": // --- important MM only methods ---
       case "metamask_sendDomainMetadata":
       case "wallet_requestPermissions":
@@ -190,7 +195,6 @@ export default class InternalEthereumProviderService extends BaseService<Events>
       case "eth_getWork":
       case "eth_hashrate":
       case "eth_mining":
-      case "eth_personalSign":
       case "eth_submitHashrate":
       case "eth_submitWork":
       case "metamask_accountsChanged":
@@ -239,6 +243,16 @@ export default class InternalEthereumProviderService extends BaseService<Events>
   private async signTypedData(params: SignTypedDataRequest) {
     return new Promise<string>((resolve, reject) => {
       this.emitter.emit("signTypedDataRequest", {
+        payload: params,
+        resolver: resolve,
+        rejecter: reject,
+      })
+    })
+  }
+
+  private async signData(params: SignDataRequest) {
+    return new Promise<string>((resolve, reject) => {
+      this.emitter.emit("signDataRequest", {
         payload: params,
         resolver: resolve,
         rejecter: reject,

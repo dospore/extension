@@ -2,6 +2,7 @@ import React, { ReactElement } from "react"
 import Wallet from "../pages/Wallet"
 import SignTransaction from "../pages/SignTransaction"
 import SignData from "../pages/SignData"
+import PersonalSign from "../pages/PersonalSign"
 import OnboardingSaveSeed from "../pages/Onboarding/OnboardingSaveSeed"
 import OnboardingVerifySeed from "../pages/Onboarding/OnboardingVerifySeed"
 import OnboardingImportMetamask from "../pages/Onboarding/OnboardingImportMetamask"
@@ -91,6 +92,13 @@ const pageList: PageList[] = [
   {
     path: "/signData",
     Component: SignData,
+    hasTabBar: false,
+    hasTopBar: false,
+    persistOnClose: false,
+  },
+  {
+    path: "/personalSign",
+    Component: PersonalSign,
     hasTabBar: false,
     hasTopBar: false,
     persistOnClose: false,
