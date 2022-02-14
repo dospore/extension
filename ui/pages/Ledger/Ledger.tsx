@@ -66,7 +66,9 @@ export default function Ledger(): ReactElement {
         /* FIXME: no UI spec for this */
         <LedgerPanelContainer
           indicatorImageSrc="/images/connect_ledger_indicator_disconnected.svg"
-          heading="Error during connection, reload the page"
+          heading="Error during connection!"
+          subHeading="Restarting onboarding in 15 seconds, follow the instructions closely!"
+          reloadTimeMs="15000"
         />
       )}
       {phase === "2-connect" && device && (

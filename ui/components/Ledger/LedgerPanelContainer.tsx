@@ -5,12 +5,21 @@ export default function LedgerPanelContainer({
   heading,
   subHeading,
   children,
+  reloadTimeMs,
 }: {
   indicatorImageSrc: string
   heading?: React.ReactNode
   subHeading?: React.ReactNode
   children?: React.ReactNode
+  reloadTimeMs?: string
 }): ReactElement {
+  if (reloadTimeMs) {
+    window.setTimeout(
+      () => window.location.reload(),
+      parseInt(reloadTimeMs, 10)
+    )
+  }
+
   return (
     <div className="panel">
       <img
