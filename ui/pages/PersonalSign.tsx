@@ -1,6 +1,9 @@
 import React, { ReactElement } from "react"
 import { AccountType } from "@tallyho/tally-background/redux-slices/accounts"
-import { getAccountTotal } from "@tallyho/tally-background/redux-slices/selectors"
+import {
+  getAccountTotal,
+  selectCurrentAccount,
+} from "@tallyho/tally-background/redux-slices/selectors"
 import {
   rejectDataSignature,
   signData,
@@ -25,8 +28,11 @@ export default function PersonalSignData({
   location: { state?: SignDataLocationState }
 }): ReactElement {
   const dispatch = useBackgroundDispatch()
-  
+
   const signingDataRequest = useBackgroundSelector(selectSigningData)
+
+  const account = useBackgroundSelector(selectCurrentAccount)
+
   console.log("data", signingDataRequest)
 
   const history = useHistory()
@@ -43,6 +49,7 @@ export default function PersonalSignData({
     }
     return undefined
   })
+
   if (
     !areKeyringsUnlocked ||
     typeof signingDataRequest === "undefined" ||
@@ -50,6 +57,7 @@ export default function PersonalSignData({
   ) {
     return <></>
   }
+
   const message = signingDataRequest?.signingData
 
   const handleConfirm = () => {
@@ -67,7 +75,7 @@ export default function PersonalSignData({
       <SignTransactionNetworkAccountInfoTopBar
         accountTotal={signerAccountTotal}
       />
-      <h1 className="serif_header title">{`Sign Message`}</h1>
+      <h1 className="serif_header title">Sign Message</h1>
       <div className="primary_info_card standard_width">
         <div className="sign_block">
           <div className="container">
@@ -78,8 +86,13 @@ export default function PersonalSignData({
             </div>
             <div className="divider" />
             <div className="divider" />
-            <div className="single_message">
+            <div className="message">
+              <div className="message-title">Message</div>
               <div className="light">{`${message}`}</div>
+            </div>
+            <div className="message">
+              <div className="signed">Signed,</div>
+              <div className="name">{account?.address ?? "Unknown"}</div>
             </div>
           </div>
         </div>
@@ -148,6 +161,9 @@ export default function PersonalSignData({
             box-shadow: 0 0 5px rgba(0, 20, 19, 0.5);
             background-color: var(--green-95);
           }
+          .signed {
+            margin-bottom: 6px;
+          }
           .sign_block {
             display: flex;
             width: 100%;
@@ -167,9 +183,13 @@ export default function PersonalSignData({
             padding-top: 16px;
           }
           .message {
-            display: flex;
-            justify-content: space-between;
-            padding: 6px 16px;
+            margin: 16px;
+            font-size: 14px;
+            line-break: anywhere;
+          }
+          .message-title {
+            color: var(--green-40);
+            margin-bottom: 6px;
           }
           .value {
             overflow-wrap: anywhere;
@@ -181,20 +201,6 @@ export default function PersonalSignData({
           }
           .key {
             color: var(--green-40);
-          }
-          .divider {
-            width: 80%;
-            height: 2px;
-            opacity: 60%;
-            background-color: var(--green-120);
-          }
-          .single_message {
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-            text-align: left;
-            padding: 16px;
-            width: 80%;
           }
           .divider {
             width: 80%;

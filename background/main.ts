@@ -271,10 +271,9 @@ export default class Main extends BaseService<never> {
       ? (Promise.resolve(null) as unknown as Promise<LedgerService>)
       : LedgerService.create()
 
-    // const signingService = HIDE_IMPORT_LEDGER
-      // ? (Promise.resolve(null) as unknown as Promise<SigningService>)
-      // : SigningService.create(keyringService, ledgerService, chainService)
-    const signingService = SigningService.create(keyringService, ledgerService, chainService);
+    const signingService = HIDE_IMPORT_LEDGER
+      ? (Promise.resolve(null) as unknown as Promise<SigningService>)
+      : SigningService.create(keyringService, ledgerService, chainService)
 
     let savedReduxState = {}
     // Setting READ_REDUX_CACHE to false will start the extension with an empty
@@ -386,11 +385,9 @@ export default class Main extends BaseService<never> {
         handler: () => this.store.dispatch(initializationLoadingTimeHitLimit()),
       },
     })
-  
+
     // Start up the redux store and set it up for proxying.
     this.store = initializeStore(savedReduxState, this)
-
-    console.log('store', this.store)
 
     wrapStore(this.store, {
       serializer: encodeJSON,
@@ -668,7 +665,7 @@ export default class Main extends BaseService<never> {
         signingData,
         account,
       }: {
-        signingData: EIP191Data, 
+        signingData: EIP191Data
         account: HexString
       }) => {
         const signedData = await this.keyringService.personalSign({

@@ -101,7 +101,7 @@ const pageList: PageList[] = [
     Component: PersonalSign,
     hasTabBar: false,
     hasTopBar: false,
-    persistOnClose: false,
+    persistOnClose: true,
   },
   {
     path: "/overview",

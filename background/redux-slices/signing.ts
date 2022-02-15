@@ -10,7 +10,7 @@ export type Events = {
     account: HexString
   }
   requestSignData: {
-    signingData: EIP191Data 
+    signingData: EIP191Data
     account: HexString
   }
   signatureRejected: never
@@ -35,7 +35,7 @@ export const initialState: SigningState = {
   signedTypedData: undefined,
 
   signedData: undefined,
-  signDataRequest: undefined
+  signDataRequest: undefined,
 }
 
 export type EIP712DomainType = {
@@ -93,32 +93,32 @@ const signingSlice = createSlice({
       ...state,
       typedDataRequest: payload,
     }),
-    signDataRequest: (
-      state,
-      { payload }: { payload: SignDataRequest }
-    ) => {
-      return ({
-      ...state,
-      signDataRequest: payload
-    })},
-    signedData: (
-      state,
-      { payload }: { payload: string }
-    ) => ({
+    signDataRequest: (state, { payload }: { payload: SignDataRequest }) => {
+      return {
+        ...state,
+        signDataRequest: payload,
+      }
+    },
+    signedData: (state, { payload }: { payload: string }) => ({
       ...state,
       signedData: payload,
-      signDataRequest: undefined  
+      signDataRequest: undefined,
     }),
     clearSigningState: (state) => ({
       ...state,
       typedDataRequest: undefined,
-      signDataRequest: undefined
+      signDataRequest: undefined,
     }),
   },
 })
 
-export const { signedTypedData, typedDataRequest, signedData, signDataRequest, clearSigningState } =
-  signingSlice.actions
+export const {
+  signedTypedData,
+  typedDataRequest,
+  signedData,
+  signDataRequest,
+  clearSigningState,
+} = signingSlice.actions
 
 export default signingSlice.reducer
 
