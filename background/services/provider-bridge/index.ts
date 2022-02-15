@@ -291,7 +291,8 @@ export default class ProviderBridgeService extends BaseService<Events> {
     params: RPCRequest["params"]
   ): Promise<unknown> {
     try {
-      let walletAddress, signDataPopupPromise;
+      let walletAddress
+      let signDataPopupPromise
       switch (method) {
         case "eth_requestAccounts":
         case "eth_accounts":

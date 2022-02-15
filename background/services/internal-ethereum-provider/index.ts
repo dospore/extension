@@ -182,7 +182,7 @@ export default class InternalEthereumProviderService extends BaseService<Events>
         return this.signData({
           account: params[1],
           signingData: params[0],
-      } as SignDataRequest)
+        } as SignDataRequest)
       case "metamask_getProviderState": // --- important MM only methods ---
       case "metamask_sendDomainMetadata":
       case "wallet_requestPermissions":

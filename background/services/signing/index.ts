@@ -18,14 +18,14 @@ type ErrorResponse = {
     reason: SigningErrorReason 
 }
 
-export type SignatureResponse =
+export type TXSignatureResponse =
   | {
       type: "success-tx"
       signedTx: SignedEVMTransaction
     }
   | ErrorResponse
 
-export type PersonalSignatureResponse =
+export type SignatureResponse =
   | {
       type: "success-data"
       signedData: string
@@ -33,9 +33,9 @@ export type PersonalSignatureResponse =
   | ErrorResponse
 
 type Events = ServiceLifecycleEvents & {
-  signingTxResponse: SignatureResponse
+  signingTxResponse: TXSignatureResponse
   signingDataResponse: SignatureResponse
-  personalSigningResponse: PersonalSignatureResponse
+  personalSigningResponse: SignatureResponse
 }
 
 type SignerType = "keyring" | HardwareSignerType
@@ -220,17 +220,24 @@ export default class SigningService extends BaseService<Events> {
     }
   }
 
-  async signData(address: string, message: string, signingMethod: SigningMethod): Promise<string> {
+  async signData(
+    address: string,
+    message: string,
+    signingMethod: SigningMethod
+  ): Promise<string> {
     this.signData = this.signData.bind(this)
     try {
-      let signedMsg;
+      let signedMsg
       switch (signingMethod.type) {
         case "ledger":
           signedMsg = await this.ledgerService.signMessage(address, message)
-          break;
+          break
         case "keyring":
-          signedMsg = await this.keyringService.personalSign({ signingData: message, account: address })
-          break;
+          signedMsg = await this.keyringService.personalSign({
+            signingData: message,
+            account: address,
+          })
+          break
         default:
           throw new Error(`Unreachable!`)
       }
@@ -239,7 +246,7 @@ export default class SigningService extends BaseService<Events> {
         type: "success",
         signedMsg,
       })
-      return signedMsg;
+      return signedMsg
     } catch (err) {
       if (err instanceof TransportStatusError) {
         const transportError = err as Error & { statusCode: number }
@@ -261,6 +268,6 @@ export default class SigningService extends BaseService<Events> {
       })
 
       throw err
-    } 
+    }
   }
 }
