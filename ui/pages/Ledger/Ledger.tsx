@@ -29,6 +29,7 @@ export default function Ledger(): ReactElement {
         <LedgerPrepare
           onContinue={async () => {
             setPhase("1-request")
+            let rejected = false
             try {
               // Open popup for testing
               // TODO: use result (for multiple devices)?
@@ -42,15 +43,17 @@ export default function Ledger(): ReactElement {
               // before firing clicks outside the popup.
               await new Promise((resolve) => setTimeout(resolve, 100))
 
-              // Advance anyway for testing. (TODO: do not.)
+              rejected = true
             }
             setPhase("2-connect")
 
-            setConnecting(true)
-            try {
-              await dispatch(connectLedger())
-            } finally {
-              setConnecting(false)
+            if (!rejected) {
+              setConnecting(true)
+              try {
+                await dispatch(connectLedger())
+              } finally {
+                setConnecting(false)
+              }
             }
           }}
         />
@@ -66,7 +69,9 @@ export default function Ledger(): ReactElement {
         /* FIXME: no UI spec for this */
         <LedgerPanelContainer
           indicatorImageSrc="/images/connect_ledger_indicator_disconnected.svg"
-          heading="Error during connection, reload the page"
+          heading="Error during connection!"
+          subHeading="Restarting onboarding in 15 seconds, follow the instructions closely!"
+          reloadTimeMs="15000"
         />
       )}
       {phase === "2-connect" && device && (
@@ -80,7 +85,7 @@ export default function Ledger(): ReactElement {
       {phase === "3-done" && (
         <LedgerImportDone
           onClose={() => {
-            setPhase("0-prepare")
+            window.close()
           }}
         />
       )}
