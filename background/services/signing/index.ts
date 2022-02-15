@@ -220,7 +220,8 @@ export default class SigningService extends BaseService<Events> {
     }
   }
 
-  async signMessage(address: string, message: string, signingMethod: SigningMethod): Promise<string> {
+  async signData(address: string, message: string, signingMethod: SigningMethod): Promise<string> {
+    this.signData = this.signData.bind(this)
     try {
       let signedMsg;
       switch (signingMethod.type) {

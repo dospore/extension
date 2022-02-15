@@ -453,10 +453,10 @@ export default class KeyringService extends BaseService<Events> {
 
 
   /**
-   * Sign typed data based on EIP-712 with the usage of eth_signTypedData_v4 method,
-   * more information about the EIP can be found at https://eips.ethereum.org/EIPS/eip-712
+   * Sign data based on EIP-191 with the usage of personal_sign method,
+   * more information about the EIP can be found at https://eips.ethereum.org/EIPS/eip-191
    *
-   * @param typedData - the data to be signed
+   * @param signingData - the data to be signed
    * @param account - signers account address
    */
 
@@ -468,11 +468,8 @@ export default class KeyringService extends BaseService<Events> {
     account: HexString
   }): Promise<string> {
     this.requireUnlocked()
-    // const { domain, types, message } = typedData
     // find the keyring using a linear search
     const keyring = await this.#findKeyring(account)
-    // When signing we should not include EIP712Domain type
-    // const { EIP712Domain, ...typesForSigning } = types
     try {
       const signature = await keyring.signMessage(
         account,
