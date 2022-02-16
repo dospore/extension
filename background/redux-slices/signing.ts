@@ -126,14 +126,12 @@ export const {
 export default signingSlice.reducer
 
 export const selectTypedData = createSelector(
-  (state: { signing: { typedDataRequest: SignTypedDataRequest } }) =>
-    state.signing.typedDataRequest,
+  (state: { signing: SigningState }) => state.signing.typedDataRequest,
   (signTypes) => signTypes
 )
 
 export const selectSigningData = createSelector(
-  (state: { signing: { signDataRequest: SignDataRequest } }) =>
-    state.signing.signDataRequest,
+  (state: { signing: SigningState }) => state.signing.signDataRequest,
   (signTypes) => signTypes
 )
 
