@@ -33,8 +33,6 @@ export default function PersonalSignData({
 
   const account = useBackgroundSelector(selectCurrentAccount)
 
-  console.log("data", signingDataRequest)
-
   const history = useHistory()
 
   const { internal } = location.state ?? {

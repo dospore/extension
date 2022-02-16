@@ -2,7 +2,6 @@ import { createSelector, createSlice } from "@reduxjs/toolkit"
 import Emittery from "emittery"
 import { EIP191Data, EIP712TypedData, HexString } from "../types"
 import { createBackgroundAsyncThunk } from "./utils"
-import { RootState } from "."
 
 export type Events = {
   requestSignTypedData: {
@@ -123,12 +122,14 @@ export const {
 export default signingSlice.reducer
 
 export const selectTypedData = createSelector(
-  (state: RootState) => state.signing.typedDataRequest,
+  (state: { signing: { typedDataRequest: SignTypedDataRequest } }) =>
+    state.signing.typedDataRequest,
   (signTypes) => signTypes
 )
 
 export const selectSigningData = createSelector(
-  (state: RootState) => state.signing.signDataRequest,
+  (state: { signing: { signDataRequest: SignDataRequest } }) =>
+    state.signing.signDataRequest,
   (signTypes) => signTypes
 )
 
