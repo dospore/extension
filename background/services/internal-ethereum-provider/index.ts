@@ -184,13 +184,15 @@ export default class InternalEthereumProviderService extends BaseService<Events>
         )
       case "eth_sign": // --- important wallet methods ---
       case "personal_sign":
-        const signingData_ = hexToAscii(params[0] as string);
-        const parsedInfo = parseSigningData(signingData_);
+        // eslint-disable-next-line no-case-declarations
+        const asciiSigningData = hexToAscii(params[0] as string)
+        // eslint-disable-next-line no-case-declarations
+        const parsedInfo = parseSigningData(asciiSigningData)
         return this.signData({
           account: params[1],
           signingData: parsedInfo.data,
           messageType: parsedInfo.type,
-          rawSigningData: signingData_
+          rawSigningData: asciiSigningData,
         } as SignDataRequest)
       case "metamask_getProviderState": // --- important MM only methods ---
       case "metamask_sendDomainMetadata":
