@@ -662,14 +662,14 @@ export default class Main extends BaseService<never> {
     signingSliceEmitter.on(
       "requestSignData",
       async ({
-        signingData,
+        rawSigningData,
         account,
       }: {
-        signingData: EIP191Data
+        rawSigningData: string,
         account: HexString
       }) => {
         const signedData = await this.keyringService.personalSign({
-          signingData,
+          signingData: rawSigningData,
           account,
         })
         this.store.dispatch(signedDataAction(signedData))

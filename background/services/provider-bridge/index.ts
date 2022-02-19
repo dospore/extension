@@ -322,6 +322,7 @@ export default class ProviderBridgeService extends BaseService<Events> {
         case "personal_sign":
           // eslint-disable-next-line no-case-declarations
           walletAddress = params[1] as HexString
+
           // eslint-disable-next-line no-case-declarations
           signDataPopupPromise = ProviderBridgeService.showExtensionPopup(
             AllowedQueryParamPage.personalSignData
