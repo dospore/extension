@@ -90,7 +90,9 @@ export default function PersonalSignData({
             </div>
             <div className="message">
               <div className="signed">Signed,</div>
-              <div className="name">{signingDataRequest.account ?? "Unknown"}</div>
+              <div className="name">
+                {signingDataRequest.account ?? "Unknown"}
+              </div>
             </div>
           </div>
         </div>
