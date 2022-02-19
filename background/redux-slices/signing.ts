@@ -2,6 +2,16 @@ import { createSelector, createSlice } from "@reduxjs/toolkit"
 import Emittery from "emittery"
 import { EIP191Data, EIP712TypedData, HexString } from "../types"
 import { createBackgroundAsyncThunk } from "./utils"
+import { SiweMessage } from 'siwe';
+
+
+export enum SignDataMessageType {
+  EIP191 = 0,
+  EIP4361 = 1,
+}
+
+// can add more types to this in the future
+export type ExpectedSigningData = EIP191Data | EIP4361Data;
 
 export type Events = {
   requestSignTypedData: {
@@ -10,7 +20,9 @@ export type Events = {
     signingMethod: SigningMethod
   }
   requestSignData: {
-    signingData: EIP191Data
+    signingData: ExpectedSigningData
+    messageType: SignDataMessageType
+    rawSigningData: string 
     account: HexString
   }
   signatureRejected: never
@@ -51,9 +63,22 @@ export type SignTypedDataRequest = {
   signingMethod: SigningMethod
 }
 
+// spec found https://eips.ethereum.org/EIPS/eip-4361
+export interface EIP4361Data {
+  domain: string,
+  address: string
+  version: string;
+  chainId: number;
+  nonce: string;
+  expiration?: string;
+  statement?: string
+}
+
 export type SignDataRequest = {
   account: string
-  signingData: EIP191Data
+  rawSigningData: string
+  signingData: ExpectedSigningData
+  messageType: SignDataMessageType
 }
 
 export const signTypedData = createBackgroundAsyncThunk(
@@ -72,13 +97,70 @@ export const signTypedData = createBackgroundAsyncThunk(
 export const signData = createBackgroundAsyncThunk(
   "signing/signData",
   async (data: SignDataRequest) => {
-    const { account, signingData } = data
+    const { account, signingData, rawSigningData, messageType } = data
     await signingSliceEmitter.emit("requestSignData", {
+      rawSigningData,
       signingData,
       account,
+      messageType
     })
   }
 )
+
+const checkEIP4361: (message: string) => EIP4361Data | undefined = (message) => {
+  try {
+    const siweMessage = new SiweMessage(message);
+    console.log('message', siweMessage);
+    if (siweMessage.domain) {
+      return ({
+        domain: siweMessage.domain,
+        address: siweMessage.address, 
+        statement:siweMessage.statement, 
+        version: siweMessage.version,
+        chainId: siweMessage.chainId,
+        expiration: siweMessage.expirationTime,
+        nonce: siweMessage.domain
+    })
+    }
+  } catch(err) {
+    console.error(err)
+  }
+
+  return undefined;
+}
+
+
+/**
+ * Takes a string and parses the string into a ExpectedSigningData Type
+ *
+ * EIP4361 standard can be found https://eips.ethereum.org/EIPS/eip-4361
+ */
+export const parseSigningData: (signingData: string) => {
+  data: ExpectedSigningData,
+  type: SignDataMessageType
+} = (signingData) => {
+  let data;
+  data = checkEIP4361(signingData)
+  console.log('parsed lines', data)
+  if (!!data) {
+    return {
+      data,
+      type: SignDataMessageType.EIP4361
+    }
+  }
+
+  // data = checkOtherType(lines)
+  // if (!!data) {
+    // return data
+  //}
+
+  // add additional checks for any other types to add in the future
+  return {
+    data: signingData,
+    type: SignDataMessageType.EIP191
+  }
+}
+
 
 const signingSlice = createSlice({
   name: "signing",

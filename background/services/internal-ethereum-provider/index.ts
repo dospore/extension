@@ -18,7 +18,12 @@ import {
 } from "../chain/utils"
 import PreferenceService from "../preferences"
 import { internalProviderPort } from "../../redux-slices/utils/contract-utils"
-import { SignTypedDataRequest, SignDataRequest } from "../../redux-slices/signing"
+import {
+  SignTypedDataRequest,
+  SignDataRequest,
+  parseSigningData,
+} from "../../redux-slices/signing"
+import { hexToAscii } from "../../lib/utils"
 
 // A type representing the transaction requests that come in over JSON-RPC
 // requests like eth_sendTransaction and eth_signTransaction. These are very
@@ -179,9 +184,13 @@ export default class InternalEthereumProviderService extends BaseService<Events>
         )
       case "eth_sign": // --- important wallet methods ---
       case "personal_sign":
+        const signingData_ = hexToAscii(params[0] as string);
+        const parsedInfo = parseSigningData(signingData_);
         return this.signData({
           account: params[1],
-          signingData: params[0],
+          signingData: parsedInfo.data,
+          messageType: parsedInfo.type,
+          rawSigningData: signingData_
         } as SignDataRequest)
       case "metamask_getProviderState": // --- important MM only methods ---
       case "metamask_sendDomainMetadata":
