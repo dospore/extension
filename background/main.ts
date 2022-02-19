@@ -747,6 +747,9 @@ export default class Main extends BaseService<never> {
     this.enrichmentService.emitter.on(
       "enrichedEVMTransaction",
       async (transactionData) => {
+        this.indexingService.notifyEnrichedTransaction(
+          transactionData.transaction
+        )
         this.store.dispatch(activityEncountered(transactionData))
       }
     )
