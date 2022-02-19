@@ -665,7 +665,7 @@ export default class Main extends BaseService<never> {
         rawSigningData,
         account,
       }: {
-        rawSigningData: string,
+        rawSigningData: string
         account: HexString
       }) => {
         const signedData = await this.keyringService.personalSign({
