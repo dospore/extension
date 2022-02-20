@@ -107,6 +107,10 @@ const LabelWithContent: React.FC<{
           font-size: 16px;
           line-height: 24px;
         }
+        .wrapper .label {
+          font-size: 16px;
+
+        }
         .content {
           color: var(--green-20);
         }

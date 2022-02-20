@@ -114,7 +114,7 @@ const checkEIP4361: (message: string) => EIP4361Data | undefined = (
       version: siweMessage.version,
       chainId: siweMessage.chainId,
       expiration: siweMessage.expirationTime,
-      nonce: siweMessage.domain,
+      nonce: siweMessage.nonce,
     }
   } catch (err) {
     // console.error(err)
