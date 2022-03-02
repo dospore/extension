@@ -70,7 +70,6 @@ import logger from "./lib/logger"
 import {
   clearSigningState,
   signedTypedData,
-  signedData as signedDataAction,
   SigningMethod,
   signedData as signedDataAction,
   signingSliceEmitter,
