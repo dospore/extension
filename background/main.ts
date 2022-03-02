@@ -32,7 +32,6 @@ import {
   updateAccountBalance,
   updateENSName,
   updateENSAvatar,
-  AccountType,
 } from "./redux-slices/accounts"
 import { activityEncountered } from "./redux-slices/activities"
 import { assetsLoaded, newPricePoint } from "./redux-slices/assets"
@@ -71,6 +70,7 @@ import logger from "./lib/logger"
 import {
   clearSigningState,
   signedTypedData,
+  signedData as signedDataAction,
   SigningMethod,
   signedData as signedDataAction,
   signingSliceEmitter,
@@ -85,7 +85,7 @@ import {
 } from "./redux-slices/ledger"
 import { ETHEREUM } from "./constants"
 import { HIDE_IMPORT_LEDGER } from "./features/features"
-import { SignatureResponse } from "./services/signing"
+import { SignatureResponse, TXSignatureResponse } from "./services/signing"
 
 // This sanitizer runs on store and action data before serializing for remote
 // redux devtools. The goal is to end up with an object that is directly
@@ -740,7 +740,7 @@ export default class Main extends BaseService<never> {
         rawSigningData,
         account,
       }: {
-        rawSigningData: string
+        rawSigningData: EIP191Data
         account: HexString
       }) => {
         const signedData = await this.keyringService.personalSign({
@@ -941,7 +941,7 @@ export default class Main extends BaseService<never> {
           )
         }
 
-        const handleAndClear = (response: SignatureResponse) => {
+        const handleAndClear = (response: TXSignatureResponse) => {
           clear()
           switch (response.type) {
             case "success-tx":

@@ -6,10 +6,10 @@ import {
   signData,
   selectSigningData,
   SignDataMessageType,
-  SignDataRequest,
   EIP4361Data,
 } from "@tallyho/tally-background/redux-slices/signing"
 import { useHistory } from "react-router-dom"
+import { EIP191Info, EIP4361Info } from "../components/SignData"
 import SharedButton from "../components/Shared/SharedButton"
 import SignTransactionNetworkAccountInfoTopBar from "../components/SignTransaction/SignTransactionNetworkAccountInfoTopBar"
 import {
@@ -22,176 +22,9 @@ interface SignDataLocationState {
   internal: boolean
 }
 
-const Divider: React.FC<{ spacing?: boolean }> = ({ spacing }) => (
-  <>
-    <div className={`divider ${spacing ? "spacing" : ""}`} />
-    <style jsx>{`
-      .divider {
-        width: 80%;
-        height: 2px;
-        opacity: 60%;
-        background-color: var(--green-120);
-      }
-      .spacing {
-        margin: 16px 0;
-      }
-    `}</style>
-  </>
-)
-
-const EIP191Info: React.FC<{
-  signingData: SignDataRequest["signingData"]
-  account: string
-  internal: boolean
-}> = ({ signingData, account, internal }) => {
-  return (
-    <>
-      <div className="label header">
-        {internal
-          ? "Your signature is required"
-          : "A dapp is requesting your signature"}
-      </div>
-      <Divider />
-      <Divider />
-      <div className="message">
-        <div className="message-title">Message</div>
-        <div className="light">{`${signingData}`}</div>
-      </div>
-      <div className="message">
-        <div className="signed">Signed,</div>
-        <div>{account ?? "Unknown"}</div>
-      </div>
-      <style jsx>{`
-        .message {
-          margin: 16px;
-          font-size: 14px;
-          width: 100%;
-          line-break: anywhere;
-        }
-        .message-title {
-          color: var(--green-40);
-          margin-bottom: 6px;
-        }
-        .light {
-          color: #ccd3d3;
-        }
-        .label {
-          color: var(--green-40);
-        }
-        .header {
-          padding: 16px 0;
-        }
-        .signed {
-          margin-bottom: 6px;
-        }
-      `}</style>
-    </>
-  )
-}
-
-const LabelWithContent: React.FC<{
-  label: string
-  content: string
-}> = ({ label, content }) => {
-  return (
-    <>
-      <div className="wrapper">
-        <div className="label">{label}:</div>
-        <div className="content">{content}</div>
-      </div>
-      <style jsx>{`
-        .wrapper {
-          display: flex;
-          justify-content: space-between;
-          width: 100%;
-          font-size: 16px;
-          line-height: 24px;
-        }
-        .wrapper .label {
-          font-size: 16px;
-
-        }
-        .content {
-          color: var(--green-20);
-        }
-      `}</style>
-    </>
-  )
-}
-
-// can add more probably needs to come from a config var though
-const CHAIN_NAMES: (chain: number) => string = (chain) => {
-  switch (chain) {
-    case 1:
-      return "Ethereum"
-    default:
-      return "Unknown"
-  }
-}
-
-// this overides the type to expect EIP4361Data
-const EIP4361Info: React.FC<{ signingData: EIP4361Data }> = ({
-  signingData,
-}) => {
-  return (
-    <>
-      <div className="domain">{signingData.domain}</div>
-      <Divider spacing />
-      <div className="subtext">
-        Wants you to sign in with your
-        <br />
-        Ethereum account:
-      </div>
-      <div className="address">{signingData.address}</div>
-      <Divider spacing />
-      {signingData?.statement ? (
-        <LabelWithContent label="Statement" content={signingData.statement} />
-      ) : null}
-      <LabelWithContent label="Nonce" content={signingData.nonce} />
-      <LabelWithContent label="Version" content={signingData.version} />
-      <LabelWithContent
-        label="Chain ID"
-        content={`${signingData.chainId.toString()} (${CHAIN_NAMES(
-          signingData.chainId
-        )})`}
-      />
-      {signingData?.expiration ? (
-        <LabelWithContent label="Expiration" content={signingData.expiration} />
-      ) : null}
-      <style jsx>{`
-        .subtext {
-          color: var(--green-40);
-          line-height: 24px;
-          font-size: 16px;
-          margin-bottom: 4px;
-        }
-        .domain,
-        .address,
-        .subtext {
-          text-align: center;
-        }
-        .address {
-          line-break: anywhere;
-          max-width: 80%;
-          font-size: 16px;
-        }
-      `}</style>
-    </>
-  )
-}
-
-const CONFIGURABLE_INFO: Record<
-  SignDataMessageType,
-  {
-    title: string
-  }
-> = {
-  [SignDataMessageType.EIP4361]: {
-    title: "Sign in with Ethereum",
-  },
-  [SignDataMessageType.EIP191]: {
-    title: "Sign Message",
-  },
+const TITLE: Record<SignDataMessageType, string> = {
+  [SignDataMessageType.EIP4361]: "Sign in with Ethereum",
+  [SignDataMessageType.EIP191]: "Sign Message",
 }
 
 export default function PersonalSignData({
@@ -243,7 +76,7 @@ export default function PersonalSignData({
         accountTotal={signerAccountTotal}
       />
       <h1 className="serif_header title">
-        {CONFIGURABLE_INFO[signingDataRequest.messageType].title}
+        {TITLE[signingDataRequest.messageType]}
       </h1>
       <div className="primary_info_card standard_width">
         <div className="sign_block">

@@ -227,13 +227,13 @@ export default class SigningService extends BaseService<Events> {
   ): Promise<string> {
     this.signData = this.signData.bind(this)
     try {
-      let signedMsg
+      let signedData
       switch (signingMethod.type) {
         case "ledger":
-          signedMsg = await this.ledgerService.signMessage(address, message)
+          signedData = await this.ledgerService.signMessage(address, message)
           break
         case "keyring":
-          signedMsg = await this.keyringService.personalSign({
+          signedData = await this.keyringService.personalSign({
             signingData: message,
             account: address,
           })
@@ -243,10 +243,10 @@ export default class SigningService extends BaseService<Events> {
       }
 
       this.emitter.emit("personalSigningResponse", {
-        type: "success",
-        signedMsg,
+        type: "success-data",
+        signedData,
       })
-      return signedMsg
+      return signedData
     } catch (err) {
       if (err instanceof TransportStatusError) {
         const transportError = err as Error & { statusCode: number }
@@ -261,12 +261,10 @@ export default class SigningService extends BaseService<Events> {
             break
         }
       }
-
       this.emitter.emit("personalSigningResponse", {
         type: "error",
         reason: "genericError",
       })
-
       throw err
     }
   }
