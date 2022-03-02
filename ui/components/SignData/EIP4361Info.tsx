@@ -1,6 +1,6 @@
 import React from "react"
 import { EIP4361Data } from "@tallyho/tally-background/redux-slices/signing"
-import { SignDataInfo } from "./SignDataInfo"
+import SignDataInfo from "./SignDataInfo"
 
 // can add networks, ideally should come from some sort of network config
 // TODO fetch this from NETWORK config
