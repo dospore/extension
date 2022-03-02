@@ -16,6 +16,7 @@ export type Events = {
   requestSignTypedData: {
     typedData: EIP712TypedData
     account: HexString
+    signingMethod: SigningMethod
   }
   requestSignData: {
     signingData: ExpectedSigningData
@@ -58,6 +59,7 @@ export type EIP712DomainType = {
 export type SignTypedDataRequest = {
   account: string
   typedData: EIP712TypedData
+  signingMethod: SigningMethod
 }
 
 // spec found https://eips.ethereum.org/EIPS/eip-4361
@@ -81,10 +83,12 @@ export type SignDataRequest = {
 export const signTypedData = createBackgroundAsyncThunk(
   "signing/signTypedData",
   async (data: SignTypedDataRequest) => {
-    const { account, typedData } = data
+    const { account, typedData, signingMethod } = data
+
     await signingSliceEmitter.emit("requestSignTypedData", {
       typedData,
       account,
+      signingMethod,
     })
   }
 )
