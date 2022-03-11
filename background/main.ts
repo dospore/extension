@@ -20,6 +20,7 @@ import {
   ServiceCreatorFunction,
   LedgerService,
   SigningService,
+  WalletConnectSerivce
 } from "./services"
 
 import { EIP712TypedData, EIP191Data, HexString, KeyringTypes } from "./types"
@@ -325,6 +326,10 @@ export default class Main extends BaseService<never> {
       ? (Promise.resolve(null) as unknown as Promise<SigningService>)
       : SigningService.create(keyringService, ledgerService, chainService)
 
+    const walletConnectService = HIDE_IMPORT_LEDGER
+      ? (Promise.resolve(null) as unknown as Promise<WalletConnectSerivce>)
+      : WalletConnectSerivce.create(keyringService, ledgerService, chainService)
+
     let savedReduxState = {}
     // Setting READ_REDUX_CACHE to false will start the extension with an empty
     // initial state, which can be useful for development
@@ -362,7 +367,8 @@ export default class Main extends BaseService<never> {
       await providerBridgeService,
       await telemetryService,
       await ledgerService,
-      await signingService
+      await signingService,
+      await walletConnectService
     )
   }
 
@@ -427,7 +433,13 @@ export default class Main extends BaseService<never> {
      * A promise to the signing service which will route operations between the UI
      * and the exact signing services.
      */
-    private signingService: SigningService
+    private signingService: SigningService,
+
+    /**
+     * A promise to the walletConnect service which will handle connections through walletConnect
+     * and any interactions with that connected wallet.
+     */
+    private walletConnectService: WalletConnectSerivce
   ) {
     super({
       initialLoadWaitExpired: {
@@ -836,6 +848,18 @@ export default class Main extends BaseService<never> {
 
     this.ledgerService.emitter.on("address", ({ address }) =>
       this.signingService.addTrackedAddress(address, "ledger")
+    )
+  }
+
+  async connectWalletConnectService(): Promise<void> {
+    this.keyringService.emitter.on("address", (address) => {}
+      // connect walletConnectService address if need be
+      // this.signingService.addTrackedAddress(address, "keyring")
+    )
+
+    this.ledgerService.emitter.on("address", ({ address }) => {}
+      // connect walletConnectService address if need be
+      // this.signingService.addTrackedAddress(address, "ledger")
     )
   }
 
