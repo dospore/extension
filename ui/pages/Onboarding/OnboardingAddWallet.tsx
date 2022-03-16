@@ -2,6 +2,7 @@ import React, { ReactElement } from "react"
 import {
   HIDE_ADD_SEED,
   HIDE_CREATE_PHRASE,
+  HIDE_WALLETCONNECT,
 } from "@tallyho/tally-background/features/features"
 import { isLedgerSupported } from "@tallyho/tally-background/services/ledger"
 import SharedBackButton from "../../components/Shared/SharedBackButton"
@@ -57,6 +58,20 @@ export default function OnboardingStartTheHunt(): ReactElement {
               }}
             >
               Connect to a Ledger
+            </SharedButton>
+          </li>
+        )}
+        {HIDE_WALLETCONNECT ? (
+          <></>
+        ) : (
+          <li className="option standard_width">
+            <div className="icon preview_icon" /> {/* TODO: add proper icon */}
+            <SharedButton
+              type="tertiary"
+              size="medium"
+              linkTo="/onboarding/walletconnect"
+            >
+              WalletConnect
             </SharedButton>
           </li>
         )}
