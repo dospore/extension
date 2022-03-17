@@ -6,6 +6,7 @@ import PersonalSign from "../pages/PersonalSign"
 import OnboardingSaveSeed from "../pages/Onboarding/OnboardingSaveSeed"
 import OnboardingVerifySeed from "../pages/Onboarding/OnboardingVerifySeed"
 import OnboardingImportMetamask from "../pages/Onboarding/OnboardingImportMetamask"
+import OnboardingWalletConnect from "../pages/Onboarding/OnboardingWalletConnect"
 import OnboardingViewOnlyWallet from "../pages/Onboarding/OnboardingViewOnlyWallet"
 import OnboardingInfoIntro from "../pages/Onboarding/OnboardingInfoIntro"
 import OnboardingAddWallet from "../pages/Onboarding/OnboardingAddWallet"
@@ -57,6 +58,13 @@ const pageList: PageList[] = [
   {
     path: "/onboarding/import-metamask",
     Component: (): ReactElement => <OnboardingImportMetamask nextPage="/" />,
+    hasTabBar: false,
+    hasTopBar: false,
+    persistOnClose: false,
+  },
+  {
+    path: "/onboarding/walletconnect",
+    Component: (): ReactElement => <OnboardingWalletConnect nextPage="/" />,
     hasTabBar: false,
     hasTopBar: false,
     persistOnClose: false,
