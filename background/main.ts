@@ -52,6 +52,9 @@ import {
   setNewSelectedAccount,
 } from "./redux-slices/ui"
 import {
+  setConnectionURI
+} from './redux-slices/walletConnect'
+import {
   estimatedFeesPerGas,
   emitter as transactionConstructionSliceEmitter,
   transactionRequest,
@@ -512,6 +515,7 @@ export default class Main extends BaseService<never> {
     if (!HIDE_IMPORT_LEDGER) {
       servicesToBeStarted.push(this.ledgerService.startService())
       servicesToBeStarted.push(this.signingService.startService())
+      servicesToBeStarted.push(this.walletConnectService.startService())
     }
 
     await Promise.all(servicesToBeStarted)
@@ -533,6 +537,7 @@ export default class Main extends BaseService<never> {
     if (!HIDE_IMPORT_LEDGER) {
       servicesToBeStopped.push(this.ledgerService.stopService())
       servicesToBeStopped.push(this.signingService.stopService())
+      servicesToBeStopped.push(this.walletConnectService.stopService())
     }
 
     await Promise.all(servicesToBeStopped)
@@ -552,6 +557,7 @@ export default class Main extends BaseService<never> {
     if (!HIDE_IMPORT_LEDGER) {
       this.connectLedgerService()
       this.connectSigningService()
+      this.connectWalletConnectService()
     }
 
     await this.connectChainService()
@@ -871,15 +877,21 @@ export default class Main extends BaseService<never> {
   }
 
   async connectWalletConnectService(): Promise<void> {
-    this.keyringService.emitter.on("address", (address) => {}
+    this.walletConnectService.emitter.on("initialisedWalletConnect", (uri) => {
+      // store connection uri
+      this.store.dispatch(
+        setConnectionURI({ uri })
+      )
+    })
+    // this.keyringService.emitter.on("address", (address) => {}
       // connect walletConnectService address if need be
       // this.signingService.addTrackedAddress(address, "keyring")
-    )
+    // )
 
-    this.ledgerService.emitter.on("address", ({ address }) => {}
+    // this.ledgerService.emitter.on("address", ({ address }) => {}
       // connect walletConnectService address if need be
       // this.signingService.addTrackedAddress(address, "ledger")
-    )
+    // )
   }
 
   async connectLedgerService(): Promise<void> {

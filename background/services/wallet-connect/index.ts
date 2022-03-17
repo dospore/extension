@@ -1,7 +1,6 @@
 import BaseService from "../base"
 import { ServiceCreatorFunction, ServiceLifecycleEvents } from "../types"
 import WalletConnect from "@walletconnect/client";
-import QRCodeModal from "@walletconnect/qrcode-modal";
 import ChainService from "../chain"
 import KeyringService from "../keyring"
 import LedgerService from "../ledger"
@@ -9,6 +8,7 @@ import LedgerService from "../ledger"
 // import { getOrCreateDB } from "./db"
 
 type Events = ServiceLifecycleEvents & {
+  initialisedWalletConnect: string 
   connected: { id: string; }
   disconnected: { id: string; }
 }
@@ -44,7 +44,6 @@ export default class WallectConnectService extends BaseService<Events> {
       await chainService,
         new WalletConnect({
           bridge: "https://bridge.walletconnect.org", // Required
-          qrcodeModal: QRCodeModal,
         })
     )
   }
@@ -115,6 +114,8 @@ export default class WallectConnectService extends BaseService<Events> {
   protected async internalStartService(): Promise<void> {
     await super.internalStartService() // Not needed, but better to stick to the patterns
 
+    // emit event
+    this.emitter.emit("initialisedWalletConnect", this.connector.uri)
 
     // Check if connection is already established
     if (!this.connector.connected) {
@@ -145,11 +146,11 @@ export default class WallectConnectService extends BaseService<Events> {
 
       this.onDisconnect()
     });
+    
   }
 
   protected async internalStopService(): Promise<void> {
     await super.internalStartService() // Not needed, but better to stick to the patterns
-
     // Delete connector
   }
 }

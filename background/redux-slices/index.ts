@@ -14,6 +14,7 @@ import dappPermissionReducer from "./dapp-permission"
 import ledgerReducer from "./ledger"
 import signingReducer from "./signing"
 import earnReducer from "./earn"
+import walletConnectReducer from './walletConnect'
 
 const mainReducer = combineReducers({
   account: accountsReducer,
@@ -26,6 +27,7 @@ const mainReducer = combineReducers({
   ui: uiReducer,
   dappPermission: dappPermissionReducer,
   signing: signingReducer,
+  walletConnect: walletConnectReducer,
   ...(HIDE_IMPORT_LEDGER ? {} : { ledger: ledgerReducer }),
   ...(HIDE_EARN_PAGE ? {} : { earn: earnReducer }),
 })

@@ -1,12 +1,16 @@
-import React, { ReactElement, useCallback, useEffect, useState } from "react"
+import React, { ReactElement, useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
+import QRCode from "react-qr-code";
 import SharedButton from "../../components/Shared/SharedButton"
 import SharedBackButton from "../../components/Shared/SharedBackButton"
 
 import {
   useBackgroundDispatch,
   useAreKeyringsUnlocked,
+  useBackgroundSelector,
 } from "../../hooks"
+import {selectConnectionURI} from "@tallyho/tally-background/redux-slices/walletConnect";
+import {setSnackbarMessage} from "@tallyho/tally-background/redux-slices/ui";
 
 type Props = {
   nextPage: string
@@ -22,6 +26,8 @@ export default function OnboardingWalletConnect(props: Props): ReactElement {
 
   const dispatch = useBackgroundDispatch()
 
+  const connectionURI = useBackgroundSelector(selectConnectionURI)
+
   const history = useHistory()
 
   useEffect(() => {
@@ -31,9 +37,10 @@ export default function OnboardingWalletConnect(props: Props): ReactElement {
     }
   }, [history, areKeyringsUnlocked, nextPage, isListening])
 
-  const connectWallet = useCallback(async () => {
-    //TODO: do stuff
-  }, [dispatch])
+  const copyData = () => {
+    navigator.clipboard.writeText(connectionURI ?? "")
+    dispatch(setSnackbarMessage("Raw data copied to clipboard"))
+  }
 
   if (!areKeyringsUnlocked) return <></>
 
@@ -47,17 +54,21 @@ export default function OnboardingWalletConnect(props: Props): ReactElement {
           <div className="metamask_onboarding_image" />
           <h1 className="serif_header">WalletConnect</h1>
           <div className="info">
-            TODO: implement this UI page
+            Scan this QR code with the mobile wallet<br/>
+            you would like to connect with.
           </div>
         </div>
         <div className="portion bottom">
+          {connectionURI && <QRCode value={connectionURI} />}
           <SharedButton
+            type="tertiary"
+            icon="copy"
             size="medium"
-            type="primary"
-            isDisabled={isListening}
-            onClick={connectWallet}
+            iconSize="secondaryMedium"
+            iconPosition="left"
+            onClick={copyData}
           >
-            Show QR code
+            Copy to clipboard 
           </SharedButton>
         </div>
       </div>
