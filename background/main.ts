@@ -90,7 +90,7 @@ import {
   setUsbDeviceCount,
 } from "./redux-slices/ledger"
 import { ETHEREUM } from "./constants"
-import { HIDE_IMPORT_LEDGER } from "./features/features"
+import { HIDE_IMPORT_LEDGER, HIDE_WALLETCONNECT } from "./features/features"
 import { clearApprovalInProgress } from "./redux-slices/0x-swap"
 import { SignatureResponse, TXSignatureResponse } from "./services/signing"
 
@@ -342,7 +342,7 @@ export default class Main extends BaseService<never> {
       ? (Promise.resolve(null) as unknown as Promise<SigningService>)
       : SigningService.create(keyringService, ledgerService, chainService)
 
-    const walletConnectService = HIDE_IMPORT_LEDGER
+    const walletConnectService = HIDE_WALLETCONNECT
       ? (Promise.resolve(null) as unknown as Promise<WalletConnectSerivce>)
       : WalletConnectSerivce.create(keyringService, ledgerService, chainService)
 
@@ -515,6 +515,9 @@ export default class Main extends BaseService<never> {
     if (!HIDE_IMPORT_LEDGER) {
       servicesToBeStarted.push(this.ledgerService.startService())
       servicesToBeStarted.push(this.signingService.startService())
+    }
+
+    if (!HIDE_WALLETCONNECT) {
       servicesToBeStarted.push(this.walletConnectService.startService())
     }
 
@@ -537,6 +540,9 @@ export default class Main extends BaseService<never> {
     if (!HIDE_IMPORT_LEDGER) {
       servicesToBeStopped.push(this.ledgerService.stopService())
       servicesToBeStopped.push(this.signingService.stopService())
+    }
+
+    if (!HIDE_WALLETCONNECT) {
       servicesToBeStopped.push(this.walletConnectService.stopService())
     }
 
@@ -557,6 +563,9 @@ export default class Main extends BaseService<never> {
     if (!HIDE_IMPORT_LEDGER) {
       this.connectLedgerService()
       this.connectSigningService()
+    }
+
+    if (!HIDE_WALLETCONNECT) {
       this.connectWalletConnectService()
     }
 

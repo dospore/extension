@@ -114,14 +114,13 @@ export default class WallectConnectService extends BaseService<Events> {
   protected async internalStartService(): Promise<void> {
     await super.internalStartService() // Not needed, but better to stick to the patterns
 
-    // emit event
-    this.emitter.emit("initialisedWalletConnect", this.connector.uri)
-
     // Check if connection is already established
     if (!this.connector.connected) {
       // create new session
-      this.connector.createSession();
+      await this.connector.createSession();
     }
+    // emit event
+    this.emitter.emit("initialisedWalletConnect", this.connector.uri)
 
     // Subscribe to connection events
     this.connector.on("connect", (error: any, payload: any) => {
