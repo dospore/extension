@@ -190,6 +190,7 @@ const signingMethodTypeToAccountType: Record<
 > = {
   keyring: AccountType.Imported,
   ledger: AccountType.Ledger,
+  walletconnect: AccountType.WalletConnect,
 }
 
 const getAccountType = (

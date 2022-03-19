@@ -16,4 +16,4 @@ export { default as InternalEthereumProviderService } from "./internal-ethereum-
 export { default as TelemetryService } from "./telemetry"
 export { default as LedgerService } from "./ledger"
 export { default as SigningService } from "./signing"
-export { default as WalletConnectSerivce } from "./wallet-connect"
+export { default as WalletConnectService } from "./wallet-connect"

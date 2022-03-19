@@ -45,6 +45,10 @@ const walletTypeDetails: { [key in AccountType]: WalletTypeInfo } = {
     title: "Full access via Ledger", // FIXME: check copy against UI specs
     icon: "./images/ledger_icon@2x.png", // FIXME: use proper icon
   },
+  [AccountType.WalletConnect]: {
+    title: "WalletConnect",
+    icon: "./images/eye_account@2x.png", // TODO: use proper icon
+  },
 }
 
 function WalletTypeHeader({

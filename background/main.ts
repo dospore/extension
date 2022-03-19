@@ -20,7 +20,7 @@ import {
   ServiceCreatorFunction,
   LedgerService,
   SigningService,
-  WalletConnectSerivce
+  WalletConnectService
 } from "./services"
 
 import { EIP712TypedData, HexString, KeyringTypes } from "./types"
@@ -338,13 +338,13 @@ export default class Main extends BaseService<never> {
       ? (Promise.resolve(null) as unknown as Promise<LedgerService>)
       : LedgerService.create()
 
+    const walletConnectService = HIDE_WALLETCONNECT
+      ? (Promise.resolve(null) as unknown as Promise<WalletConnectService>)
+      : WalletConnectService.create(keyringService, ledgerService, chainService)
+
     const signingService = HIDE_IMPORT_LEDGER
       ? (Promise.resolve(null) as unknown as Promise<SigningService>)
-      : SigningService.create(keyringService, ledgerService, chainService)
-
-    const walletConnectService = HIDE_WALLETCONNECT
-      ? (Promise.resolve(null) as unknown as Promise<WalletConnectSerivce>)
-      : WalletConnectSerivce.create(keyringService, ledgerService, chainService)
+      : SigningService.create(keyringService, ledgerService, walletConnectService, chainService)
 
     let savedReduxState = {}
     // Setting READ_REDUX_CACHE to false will start the extension with an empty
@@ -455,7 +455,7 @@ export default class Main extends BaseService<never> {
      * A promise to the walletConnect service which will handle connections through walletConnect
      * and any interactions with that connected wallet.
      */
-    private walletConnectService: WalletConnectSerivce
+    private walletConnectService: WalletConnectService
   ) {
     super({
       initialLoadWaitExpired: {
@@ -514,11 +514,10 @@ export default class Main extends BaseService<never> {
 
     if (!HIDE_IMPORT_LEDGER) {
       servicesToBeStarted.push(this.ledgerService.startService())
+      if (!HIDE_WALLETCONNECT) {
+        servicesToBeStarted.push(this.walletConnectService.startService())
+      }
       servicesToBeStarted.push(this.signingService.startService())
-    }
-
-    if (!HIDE_WALLETCONNECT) {
-      servicesToBeStarted.push(this.walletConnectService.startService())
     }
 
     await Promise.all(servicesToBeStarted)
@@ -539,11 +538,10 @@ export default class Main extends BaseService<never> {
 
     if (!HIDE_IMPORT_LEDGER) {
       servicesToBeStopped.push(this.ledgerService.stopService())
+      if (!HIDE_WALLETCONNECT) {
+        servicesToBeStopped.push(this.walletConnectService.stopService())
+      }
       servicesToBeStopped.push(this.signingService.stopService())
-    }
-
-    if (!HIDE_WALLETCONNECT) {
-      servicesToBeStopped.push(this.walletConnectService.stopService())
     }
 
     await Promise.all(servicesToBeStopped)
@@ -562,11 +560,10 @@ export default class Main extends BaseService<never> {
 
     if (!HIDE_IMPORT_LEDGER) {
       this.connectLedgerService()
+      if (!HIDE_WALLETCONNECT) {
+        this.connectWalletConnectService()
+      }
       this.connectSigningService()
-    }
-
-    if (!HIDE_WALLETCONNECT) {
-      this.connectWalletConnectService()
     }
 
     await this.connectChainService()

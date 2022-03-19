@@ -1,6 +1,7 @@
 import { StatusCodes, TransportStatusError } from "@ledgerhq/errors"
 import KeyringService from "../keyring"
 import LedgerService from "../ledger"
+import WalletConnectService from "../wallet-connect"
 import {
   EIP1559TransactionRequest,
   EVMNetwork,
@@ -80,11 +81,12 @@ export default class SigningService extends BaseService<Events> {
   static create: ServiceCreatorFunction<
     Events,
     SigningService,
-    [Promise<KeyringService>, Promise<LedgerService>, Promise<ChainService>]
-  > = async (keyringService, ledgerService, chainService) => {
+    [Promise<KeyringService>, Promise<LedgerService>, Promise<WalletConnectService>, Promise<ChainService>]
+  > = async (keyringService, ledgerService, walletConnectService, chainService) => {
     return new this(
       await keyringService,
       await ledgerService,
+      await walletConnectService,
       await chainService
     )
   }
@@ -92,6 +94,7 @@ export default class SigningService extends BaseService<Events> {
   private constructor(
     private keyringService: KeyringService,
     private ledgerService: LedgerService,
+    private walletConnectService: WalletConnectService,
     private chainService: ChainService
   ) {
     super()
