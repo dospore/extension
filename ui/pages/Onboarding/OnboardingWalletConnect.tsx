@@ -59,7 +59,7 @@ export default function OnboardingWalletConnect(props: Props): ReactElement {
           </div>
         </div>
         <div className="portion bottom">
-          {connectionURI && <QRCode value={connectionURI} />}
+          {connectionURI && <QRCode value={connectionURI} size={300} bgColor={'#002522'} fgColor={'#ffffff'} />}
           <SharedButton
             type="tertiary"
             icon="copy"
