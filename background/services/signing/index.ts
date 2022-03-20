@@ -41,7 +41,7 @@ type Events = ServiceLifecycleEvents & {
   personalSigningResponse: SignatureResponse
 }
 
-type SignerType = "keyring" | HardwareSignerType
+type SignerType = "keyring" | "walletConnect" | HardwareSignerType
 type HardwareSignerType = "ledger"
 
 type AddressHandler = {
@@ -81,8 +81,18 @@ export default class SigningService extends BaseService<Events> {
   static create: ServiceCreatorFunction<
     Events,
     SigningService,
-    [Promise<KeyringService>, Promise<LedgerService>, Promise<WalletConnectService>, Promise<ChainService>]
-  > = async (keyringService, ledgerService, walletConnectService, chainService) => {
+    [
+      Promise<KeyringService>,
+      Promise<LedgerService>,
+      Promise<WalletConnectService>,
+      Promise<ChainService>
+    ]
+  > = async (
+    keyringService,
+    ledgerService,
+    walletConnectService,
+    chainService
+  ) => {
     return new this(
       await keyringService,
       await ledgerService,
@@ -134,6 +144,14 @@ export default class SigningService extends BaseService<Events> {
           { address: transactionWithNonce.from, network },
           transactionWithNonce
         )
+      case "walletConnect":
+        return this.walletConnectService
+          .signTransaction
+          // network,
+          // transactionWithNonce,
+          // signingMethod.deviceID,
+          // signingMethod.path
+          ()
       default:
         throw new Error(`Unreachable!`)
     }

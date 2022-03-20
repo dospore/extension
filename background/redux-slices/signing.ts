@@ -31,7 +31,7 @@ export type Events = {
 export type SigningMethod =
   | { type: "keyring" }
   | { type: "ledger"; deviceID: string; path: string }
-  | { type: "walletconnect" }
+  | { type: "walletConnect" }
 
 export const signingSliceEmitter = new Emittery<Events>()
 

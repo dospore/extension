@@ -1,6 +1,11 @@
 import React, { ReactElement, useEffect, useState } from "react"
-import { useHistory } from "react-router-dom"
-import QRCode from "react-qr-code";
+import { Redirect, useHistory } from "react-router-dom"
+import QRCode from "react-qr-code"
+import {
+  selectConnectionURI,
+  selectWallectConnection,
+} from "@tallyho/tally-background/redux-slices/walletConnect"
+import { setSnackbarMessage } from "@tallyho/tally-background/redux-slices/ui"
 import SharedButton from "../../components/Shared/SharedButton"
 import SharedBackButton from "../../components/Shared/SharedBackButton"
 
@@ -9,8 +14,6 @@ import {
   useAreKeyringsUnlocked,
   useBackgroundSelector,
 } from "../../hooks"
-import {selectConnectionURI} from "@tallyho/tally-background/redux-slices/walletConnect";
-import {setSnackbarMessage} from "@tallyho/tally-background/redux-slices/ui";
 
 type Props = {
   nextPage: string
@@ -27,6 +30,7 @@ export default function OnboardingWalletConnect(props: Props): ReactElement {
   const dispatch = useBackgroundDispatch()
 
   const connectionURI = useBackgroundSelector(selectConnectionURI)
+  const connected = useBackgroundSelector(selectWallectConnection)
 
   const history = useHistory()
 
@@ -42,6 +46,11 @@ export default function OnboardingWalletConnect(props: Props): ReactElement {
     dispatch(setSnackbarMessage("Raw data copied to clipboard"))
   }
 
+  // Redirect to the home tab once account is connected
+  if (connected) {
+    return <Redirect to="/" />
+  }
+
   if (!areKeyringsUnlocked) return <></>
 
   return (
@@ -54,12 +63,20 @@ export default function OnboardingWalletConnect(props: Props): ReactElement {
           <div className="metamask_onboarding_image" />
           <h1 className="serif_header">WalletConnect</h1>
           <div className="info">
-            Scan this QR code with the mobile wallet<br/>
+            Scan this QR code with the mobile wallet
+            <br />
             you would like to connect with.
           </div>
         </div>
         <div className="portion bottom">
-          {connectionURI && <QRCode value={connectionURI} size={300} bgColor={'#002522'} fgColor={'#ffffff'} />}
+          {connectionURI && (
+            <QRCode
+              value={connectionURI}
+              size={300}
+              bgColor="#002522"
+              fgColor="#ffffff"
+            />
+          )}
           <SharedButton
             type="tertiary"
             icon="copy"
@@ -68,7 +85,7 @@ export default function OnboardingWalletConnect(props: Props): ReactElement {
             iconPosition="left"
             onClick={copyData}
           >
-            Copy to clipboard 
+            Copy to clipboard
           </SharedButton>
         </div>
       </div>

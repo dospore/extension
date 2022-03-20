@@ -20,7 +20,7 @@ import {
   ServiceCreatorFunction,
   LedgerService,
   SigningService,
-  WalletConnectService
+  WalletConnectService,
 } from "./services"
 
 import { EIP712TypedData, HexString, KeyringTypes } from "./types"
@@ -52,8 +52,9 @@ import {
   setNewSelectedAccount,
 } from "./redux-slices/ui"
 import {
-  setConnectionURI
-} from './redux-slices/walletConnect'
+  setConnectionURI,
+  setWalletConnected,
+} from "./redux-slices/walletConnect"
 import {
   estimatedFeesPerGas,
   emitter as transactionConstructionSliceEmitter,
@@ -344,7 +345,12 @@ export default class Main extends BaseService<never> {
 
     const signingService = HIDE_IMPORT_LEDGER
       ? (Promise.resolve(null) as unknown as Promise<SigningService>)
-      : SigningService.create(keyringService, ledgerService, walletConnectService, chainService)
+      : SigningService.create(
+          keyringService,
+          ledgerService,
+          walletConnectService,
+          chainService
+        )
 
     let savedReduxState = {}
     // Setting READ_REDUX_CACHE to false will start the extension with an empty
@@ -885,18 +891,33 @@ export default class Main extends BaseService<never> {
   async connectWalletConnectService(): Promise<void> {
     this.walletConnectService.emitter.on("initialisedWalletConnect", (uri) => {
       // store connection uri
-      this.store.dispatch(
-        setConnectionURI({ uri })
-      )
+      this.store.dispatch(setConnectionURI({ uri }))
     })
+
+    this.walletConnectService.emitter.on(
+      "connected",
+      async ({ address, network }) => {
+        console.log("adding wallet", address, network)
+        const addressNetwork = {
+          address,
+          network,
+        }
+        this.signingService.addTrackedAddress(address, "walletConnect")
+        await this.chainService.addAccountToTrack(addressNetwork)
+        this.store.dispatch(loadAccount(address))
+        this.store.dispatch(setNewSelectedAccount(addressNetwork))
+
+        this.store.dispatch(setWalletConnected({ connected: true }))
+      }
+    )
     // this.keyringService.emitter.on("address", (address) => {}
-      // connect walletConnectService address if need be
-      // this.signingService.addTrackedAddress(address, "keyring")
+    // connect walletConnectService address if need be
+    // this.signingService.addTrackedAddress(address, "keyring")
     // )
 
     // this.ledgerService.emitter.on("address", ({ address }) => {}
-      // connect walletConnectService address if need be
-      // this.signingService.addTrackedAddress(address, "ledger")
+    // connect walletConnectService address if need be
+    // this.signingService.addTrackedAddress(address, "ledger")
     // )
   }
 
