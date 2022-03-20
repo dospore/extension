@@ -907,7 +907,9 @@ export default class Main extends BaseService<never> {
         this.store.dispatch(loadAccount(address))
         this.store.dispatch(setNewSelectedAccount(addressNetwork))
 
-        this.store.dispatch(setWalletConnected({ connected: true }))
+        this.store.dispatch(
+          setWalletConnected({ connected: true, account: address })
+        )
       }
     )
     // this.keyringService.emitter.on("address", (address) => {}

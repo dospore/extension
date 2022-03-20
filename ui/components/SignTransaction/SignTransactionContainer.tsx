@@ -1,8 +1,7 @@
-import { AccountTotal } from "@tallyho/tally-background/redux-slices/selectors"
 import React, { ReactElement, ReactNode, useState } from "react"
+import { AccountTotal } from "@tallyho/tally-background/redux-slices/selectors"
 import SharedButton from "../Shared/SharedButton"
 import SharedSlideUpMenu from "../Shared/SharedSlideUpMenu"
-import SignTransactionDetailPanel from "./SignTransactionDetailPanel"
 import SignTransactionLedgerActivateBlindSigning from "./SignTransactionLedgerActivateBlindSigning"
 import SignTransactionLedgerBusy from "./SignTransactionLedgerBusy"
 import SignTransactionLedgerNotConnected from "./SignTransactionLedgerNotConnected"
@@ -40,18 +39,33 @@ export default function SignTransactionContainer({
   const isLedgerSigning = signingMethod?.type === "ledger"
   const isWaitingForHardware = isLedgerSigning && isTransactionSigning
 
+  const isWalletConnectSigning = signingMethod?.type === "walletConnect"
+  const isWaitingForWalletConnect =
+    isWalletConnectSigning && isTransactionSigning
+
+  const getTitle = () => {
+    switch (true) {
+      case isWaitingForHardware:
+        return "Awaiting hardware wallet signature"
+      case isWaitingForWalletConnect:
+        return "Awaiting wallet conenct signature"
+      default:
+        return title
+    }
+  }
+
   return (
     <section>
       <SignTransactionNetworkAccountInfoTopBar
         accountTotal={signerAccountTotal}
       />
-      <h1 className="serif_header title">
-        {isWaitingForHardware ? "Awaiting hardware wallet signature" : title}
-      </h1>
+      <h1 className="serif_header title">{getTitle()}</h1>
       <div className="primary_info_card standard_width">
-        {isWaitingForHardware ? reviewPanel : detailPanel}
+        {isWaitingForHardware || isWaitingForWalletConnect
+          ? reviewPanel
+          : detailPanel}
       </div>
-      {isWaitingForHardware ? (
+      {isWaitingForHardware || isWaitingForWalletConnect ? (
         <div className="cannot_reject_warning">
           <span className="block_icon" />
           Tx can only be Rejected from Ledger
@@ -93,7 +107,18 @@ export default function SignTransactionContainer({
                   {confirmButtonLabel}
                 </SharedButton>
               ))}
-            {!signerAccountTotal.signingMethod && (
+            {isWalletConnectSigning ?? (
+              <SharedButton
+                type="primary"
+                iconSize="large"
+                size="large"
+                onClick={handleConfirm}
+                showLoadingOnClick
+              >
+                {confirmButtonLabel}
+              </SharedButton>
+            )}
+            {!signerAccountTotal.signingMethod && !isWalletConnectSigning && (
               <span className="no-signing">Read-only accounts cannot sign</span>
             )}
           </div>

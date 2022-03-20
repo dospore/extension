@@ -279,6 +279,12 @@ export default class SigningService extends BaseService<Events> {
             account: address,
           })
           break
+        case "walletConnect":
+          signedData = await this.walletConnectService.personalSign({
+            signingData: message,
+            account: address,
+          })
+          break
         default:
           throw new Error(`Unreachable!`)
       }

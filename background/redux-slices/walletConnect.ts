@@ -1,4 +1,5 @@
 import { createSelector, createSlice } from "@reduxjs/toolkit"
+import { HexString } from "../types"
 // import Emittery from "emittery"
 // import { HexString } from "../types"
 // import { createBackgroundAsyncThunk } from "./utils"
@@ -101,12 +102,14 @@ const walletConnectSlice = createSlice({
       }: {
         payload: {
           connected: boolean
+          account: HexString
         }
       }
     ) => {
       return {
         ...state,
         connected: payload.connected,
+        account: payload.account,
       }
     },
     clearWalletConnectState: (state) => ({
