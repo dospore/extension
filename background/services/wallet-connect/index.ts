@@ -5,9 +5,11 @@ import ChainService from "../chain"
 import KeyringService from "../keyring"
 import LedgerService from "../ledger"
 import logger from "../../lib/logger"
-import { EVMNetwork, SignedEVMTransaction } from "../../networks"
-import { ETHEREUM } from "../../constants"
+import {EIP1559TransactionRequest, EVMNetwork, SignedEVMTransaction} from "../../networks"
+import {ETH, ETHEREUM} from "../../constants"
 import { EIP191Data, HexString } from "../../types"
+import {ethersTransactionRequestFromEIP1559TransactionRequest} from "../chain/utils";
+import {serialize, UnsignedTransaction} from "@ethersproject/transactions";
 
 type Events = ServiceLifecycleEvents & {
   initialisedWalletConnect: string
@@ -98,17 +100,62 @@ export default class WallectConnectService extends BaseService<Events> {
       })
   }
 
-  async signTransaction(): // network: EVMNetwork,
-  // transactionRequest: EIP1559TransactionRequest & { nonce: number },
-  // deviceID: string,
-  // path: string
-  Promise<SignedEVMTransaction> {
+  async signTransaction(
+    network: EVMNetwork,
+    transactionRequest: EIP1559TransactionRequest & { nonce: number },
+  ): Promise<SignedEVMTransaction> {
     return this.runSerialized(async () => {
       try {
-        // TODO need to construct txn and send it via connector
-        // https://docs.walletconnect.com/quick-start/dapps/client#sign-transaction-eth_signtransaction
-        const signedTx: SignedEVMTransaction =
-          undefined as unknown as SignedEVMTransaction
+        if (!this.connector.connected) {
+          throw new Error("WalletConnect not connected!")
+        }
+
+        // TODO: identify how to send EIP-1559 tx via WalletConnect
+        const unsignedTx = {
+          to: transactionRequest.to,
+          data: transactionRequest.input ?? undefined,
+          from: transactionRequest.from,
+          // type: transactionRequest.type,
+          nonce: transactionRequest.nonce,
+          // value: transactionRequest.value,
+          chainId: parseInt(transactionRequest.chainID, 10),
+          // gas: transactionRequest.gasLimit,
+          // maxFeePerGas: transactionRequest.maxFeePerGas,
+          // maxPriorityFeePerGas: transactionRequest.maxPriorityFeePerGas,
+        }
+
+        const tx = await this.connector.signTransaction(unsignedTx)
+        console.log(tx)
+        if (
+          typeof tx.maxPriorityFeePerGas === "undefined" ||
+          typeof tx.maxFeePerGas === "undefined" ||
+          tx.type !== 2
+        ) {
+          throw new Error("Can only sign EIP-1559 conforming transactions")
+        }
+
+        const signedTx: SignedEVMTransaction = {
+          hash: tx.hash,
+          from: tx.from,
+          to: tx.to,
+          nonce: tx.nonce,
+          input: tx.data,
+          value: tx.value.toBigInt(),
+          type: tx.type,
+          gasPrice: null,
+          maxFeePerGas: tx.maxFeePerGas.toBigInt(),
+          maxPriorityFeePerGas: tx.maxPriorityFeePerGas.toBigInt(),
+          gasLimit: tx.gasLimit.toBigInt(),
+          r: tx.r,
+          s: tx.s,
+          v: tx.v,
+
+          blockHash: null,
+          blockHeight: null,
+          asset: ETH,
+          network,
+        }
+
         return signedTx
       } catch (err) {
         logger.error(`Error encountered! transactionRequest: error: ${err}`)
