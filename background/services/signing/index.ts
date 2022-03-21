@@ -146,12 +146,10 @@ export default class SigningService extends BaseService<Events> {
         )
       case "walletConnect":
         return this.walletConnectService
-          .signTransaction
-          // network,
-          // transactionWithNonce,
-          // signingMethod.deviceID,
-          // signingMethod.path
-          ()
+          .signTransaction(
+            network,
+            transactionWithNonce
+          )
       default:
         throw new Error(`Unreachable!`)
     }
