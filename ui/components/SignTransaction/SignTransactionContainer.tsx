@@ -48,7 +48,7 @@ export default function SignTransactionContainer({
       case isWaitingForHardware:
         return "Awaiting hardware wallet signature"
       case isWaitingForWalletConnect:
-        return "Awaiting wallet conenct signature"
+        return "Awaiting wallet connect signature"
       default:
         return title
     }
