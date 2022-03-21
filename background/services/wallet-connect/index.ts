@@ -8,24 +8,12 @@ import logger from "../../lib/logger"
 import {EIP1559TransactionRequest, EVMNetwork, SignedEVMTransaction} from "../../networks"
 import {ETH, ETHEREUM} from "../../constants"
 import { EIP191Data, HexString } from "../../types"
-import {ethersTransactionRequestFromEIP1559TransactionRequest} from "../chain/utils";
-import {serialize, UnsignedTransaction} from "@ethersproject/transactions";
 
 type Events = ServiceLifecycleEvents & {
   initialisedWalletConnect: string
   connected: { address: string; network: EVMNetwork }
   disconnected: { address: string }
 }
-
-// type Transaction = {
-// from: string // Required
-// to: string // Required (for non contract deployments)
-// data: string // Required
-// gasPrice?: string // Optional
-// gas?: string // Optional
-// value?: string // Optional
-// nonce?: string // Optional
-// }
 
 /**
  * The WalletConnectSerivce is responsible for maintaining the connection
@@ -115,7 +103,7 @@ export default class WallectConnectService extends BaseService<Events> {
           to: transactionRequest.to,
           data: transactionRequest.input ?? undefined,
           from: transactionRequest.from,
-          // type: transactionRequest.type,
+          type: transactionRequest.type.toString(),
           nonce: transactionRequest.nonce,
           // value: transactionRequest.value,
           chainId: parseInt(transactionRequest.chainID, 10),
@@ -125,7 +113,8 @@ export default class WallectConnectService extends BaseService<Events> {
         }
 
         const tx = await this.connector.signTransaction(unsignedTx)
-        console.log(tx)
+
+        console.log("Signed", tx)
         if (
           typeof tx.maxPriorityFeePerGas === "undefined" ||
           typeof tx.maxFeePerGas === "undefined" ||
