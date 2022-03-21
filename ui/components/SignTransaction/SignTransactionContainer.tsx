@@ -68,7 +68,8 @@ export default function SignTransactionContainer({
       {isWaitingForHardware || isWaitingForWalletConnect ? (
         <div className="cannot_reject_warning">
           <span className="block_icon" />
-          Tx can only be Rejected from {isWaitingForWalletConnect ? "remote wallet" : "Ledger"}
+          Tx can only be Rejected from{" "}
+          {isWaitingForWalletConnect ? "remote wallet" : "Ledger"}
         </div>
       ) : (
         <>

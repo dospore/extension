@@ -897,7 +897,6 @@ export default class Main extends BaseService<never> {
     this.walletConnectService.emitter.on(
       "connected",
       async ({ address, network }) => {
-        console.log("adding wallet", address, network)
         const addressNetwork = {
           address,
           network,
@@ -912,15 +911,6 @@ export default class Main extends BaseService<never> {
         )
       }
     )
-    // this.keyringService.emitter.on("address", (address) => {}
-    // connect walletConnectService address if need be
-    // this.signingService.addTrackedAddress(address, "keyring")
-    // )
-
-    // this.ledgerService.emitter.on("address", ({ address }) => {}
-    // connect walletConnectService address if need be
-    // this.signingService.addTrackedAddress(address, "ledger")
-    // )
   }
 
   async connectLedgerService(): Promise<void> {

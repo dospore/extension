@@ -12,7 +12,7 @@ import { EIP191Data, HexString } from "../../types"
 type Events = ServiceLifecycleEvents & {
   initialisedWalletConnect: string
   connected: { address: string; network: EVMNetwork }
-  disconnected: { id: string }
+  disconnected: { address: string }
 }
 
 // type Transaction = {
@@ -32,8 +32,6 @@ type Events = ServiceLifecycleEvents & {
  */
 export default class WallectConnectService extends BaseService<Events> {
   private connector: WalletConnect
-
-  private connected: boolean
 
   #lastOperationPromise = Promise.resolve()
 
@@ -60,7 +58,6 @@ export default class WallectConnectService extends BaseService<Events> {
   ) {
     super()
     this.connector = connector_
-    this.connected = false
   }
 
   private runSerialized<T>(operation: () => Promise<T>) {
@@ -93,12 +90,10 @@ export default class WallectConnectService extends BaseService<Events> {
     return this.connector
       .signPersonalMessage(msgParams)
       .then((result) => {
-        console.log("Signature from wallet connect", result)
         return result
       })
       .catch((error) => {
         // Error returned when rejected
-        console.error(error)
         throw new Error(`Failed to sign ${error}`)
       })
   }
@@ -110,7 +105,6 @@ export default class WallectConnectService extends BaseService<Events> {
   Promise<SignedEVMTransaction> {
     return this.runSerialized(async () => {
       try {
-        console.log("Signing transaction with wallet connect!!!")
         // TODO need to construct txn and send it via connector
         // https://docs.walletconnect.com/quick-start/dapps/client#sign-transaction-eth_signtransaction
         const signedTx: SignedEVMTransaction =
@@ -124,11 +118,15 @@ export default class WallectConnectService extends BaseService<Events> {
     })
   }
 
-  async onConnection(accounts: string[], chainId: number): Promise<void> {
-    // handle connection updates
-    // return this.runSerialized(async () => {
-    console.log("connected", accounts, chainId)
-    this.connected = true
+  async onConnection(accounts: string[], _chainID: number): Promise<void> {
+    this.emitter.emit("connected", {
+      address: accounts[0],
+      // TODO switch network on incoming chainID
+      network: ETHEREUM,
+    })
+  }
+
+  async onSessionUpdate(accounts: string[], _chainID: number): Promise<void> {
     this.emitter.emit("connected", {
       address: accounts[0],
       // TODO change this so its dynamic on chainID
@@ -136,19 +134,12 @@ export default class WallectConnectService extends BaseService<Events> {
     })
   }
 
-  async onSessionUpdate(accounts: string[], chainId: number): Promise<void> {
-    // handle session updates
-  }
-
-  async onDisconnect(): Promise<void> {
+  async onDisconnect(accounts: string[]): Promise<void> {
     // handle cleanup of internals
-    this.connected = false
-  }
-
-  async connect(): Promise<void> {}
-
-  async disconnect(): Promise<void> {
-    // disconnect account
+    // TODO loop through connected addresses and disconnect them
+    this.emitter.emit("disconnected", {
+      address: accounts[0],
+    })
   }
 
   protected async internalStartService(): Promise<void> {
@@ -182,13 +173,12 @@ export default class WallectConnectService extends BaseService<Events> {
       if (error) {
         throw error
       }
-
-      this.onDisconnect()
+      const { accounts } = payload.params[0]
+      this.onDisconnect(accounts)
     })
   }
 
   protected async internalStopService(): Promise<void> {
     await super.internalStartService() // Not needed, but better to stick to the patterns
-    // Delete connector
   }
 }
